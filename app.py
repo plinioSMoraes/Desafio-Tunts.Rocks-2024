@@ -13,36 +13,55 @@ SPREADSHEETID = "1tVWfI2r6kw1amZbDLhxzBUkK_lPP_u1t0gyV7rZrOY4"
 SPREADSHEETRANGE = "engenharia_de_software!A1:H27"
 
 def save_user_data(sheet, data):
-    sheet.values().update(
-      spreadsheetId=SPREADSHEETID, 
-      range=SPREADSHEETRANGE,
-      valueInputOption="RAW",
-      body={"values": data}).execute()
+  """Saves user score information
+
+  Args:
+      sheet (Google Sheets API Configuration): Config file for storing the information in the google sheets
+      data (List): Score information to be added
+  """
+  sheet.values().update(
+    spreadsheetId=SPREADSHEETID, 
+    range=SPREADSHEETRANGE,
+    valueInputOption="RAW",
+    body={"values": data}).execute()
 
 def resolve_user_data(data):
-    total_lessons = int(re.findall(r'\d+', data[1][0])[0])
-    
-    for i, student in enumerate(data[3:], start=3):
-        lessons_taken = int(student[2])
-        mean = (float(student[3]) + int(student[4]) + int(student[5])) / 3
-        situation = ''
-        naf = 0
-        if mean >= 70:
-            situation = 'Aprovado'
-        elif 50 <= mean < 70:
-            situation = 'Exame Final'
-            naf = 100 - mean
-        elif mean < 50:
-            situation = 'Reprovado por Nota'
-        if lessons_taken > total_lessons * 0.25:
-            naf = 0
-            situation = 'Reprovado por Falta'
-    
-        data[i].extend([situation, "{:.2f}".format(naf)])
+  """_summary_
 
-    return data
+  Args:
+      data (List): User informations to be processed
+
+  Returns:
+      _type_: User information with complete accessment results
+  """
+  total_lessons = int(re.findall(r'\d+', data[1][0])[0])
+  
+  for i, student in enumerate(data[3:], start=3):
+      lessons_taken = int(student[2])
+      mean = (float(student[3]) + int(student[4]) + int(student[5])) / 3
+      situation = ''
+      naf = 0
+      if mean >= 70:
+          situation = 'Aprovado'
+      elif 50 <= mean < 70:
+          situation = 'Exame Final'
+          naf = 100 - mean
+      elif mean < 50:
+          situation = 'Reprovado por Nota'
+      if lessons_taken > total_lessons * 0.25:
+          naf = 0
+          situation = 'Reprovado por Falta'
+  
+      data[i].extend([situation, "{:.2f}".format(naf)])
+
+  return data
 
 def gsheets_conn():
+  """Create the configuration to securely connect to the google sheets api
+
+  Returns:
+      _type_: The user information to be processed
+  """
   creds = None
 
   if os.path.exists("token.json"):
@@ -78,6 +97,8 @@ def gsheets_conn():
     print(err)
 
 def app():
+  """ The main application function
+  """
   spreadsheet_values, service = gsheets_conn()
   resolved_student_scores = resolve_user_data(spreadsheet_values)
   save_user_data(service, resolved_student_scores)
