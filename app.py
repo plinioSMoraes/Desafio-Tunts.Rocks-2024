@@ -12,6 +12,13 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SPREADSHEETID = "1tVWfI2r6kw1amZbDLhxzBUkK_lPP_u1t0gyV7rZrOY4"
 SPREADSHEETRANGE = "engenharia_de_software!A1:H27"
 
+def save_user_data(sheet, data):
+    sheet.values().update(
+      spreadsheetId=SPREADSHEETID, 
+      range=SPREADSHEETRANGE,
+      valueInputOption="RAW",
+      body={"values": data}).execute()
+
 def resolve_user_data(data):
     total_lessons = int(re.findall(r'\d+', data[1][0])[0])
     
@@ -32,7 +39,7 @@ def resolve_user_data(data):
             situation = 'Reprovado por Falta'
     
         data[i].extend([situation, "{:.2f}".format(naf)])
-        print(data[i])
+
     return data
 
 def gsheets_conn():
@@ -65,7 +72,7 @@ def gsheets_conn():
         .execute()
     )
     values = result.get("values", [])
-    return values, service
+    return [values, sheet]
     
   except HttpError as err:
     print(err)
@@ -73,5 +80,6 @@ def gsheets_conn():
 def app():
   spreadsheet_values, service = gsheets_conn()
   resolved_student_scores = resolve_user_data(spreadsheet_values)
+  save_user_data(service, resolved_student_scores)
 
 app()
