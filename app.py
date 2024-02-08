@@ -12,6 +12,29 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SPREADSHEETID = "1tVWfI2r6kw1amZbDLhxzBUkK_lPP_u1t0gyV7rZrOY4"
 SPREADSHEETRANGE = "engenharia_de_software!A1:H27"
 
+def resolve_user_data(data):
+    total_lessons = int(re.findall(r'\d+', data[1][0])[0])
+    
+    for i, student in enumerate(data[3:], start=3):
+        lessons_taken = int(student[2])
+        mean = (float(student[3]) + int(student[4]) + int(student[5])) / 3
+        situation = ''
+        naf = 0
+        if mean >= 70:
+            situation = 'Aprovado'
+        elif 50 <= mean < 70:
+            situation = 'Exame Final'
+            naf = 100 - mean
+        elif mean < 50:
+            situation = 'Reprovado por Nota'
+        if lessons_taken > total_lessons * 0.25:
+            naf = 0
+            situation = 'Reprovado por Falta'
+    
+        data[i].extend([situation, "{:.2f}".format(naf)])
+        print(data[i])
+    return data
+
 def gsheets_conn():
   creds = None
 
@@ -49,6 +72,6 @@ def gsheets_conn():
 
 def app():
   spreadsheet_values, service = gsheets_conn()
-  print(spreadsheet_values)
+  resolved_student_scores = resolve_user_data(spreadsheet_values)
 
 app()
