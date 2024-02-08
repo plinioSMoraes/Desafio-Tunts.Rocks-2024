@@ -32,4 +32,7 @@ Here is a quick setup guide - https://realpython.com/installing-python/
 Clone the repo
   - git clone git@github.com:plinioSMoraes/Desafio-Tunts.Rocks-2024.git
 
+Running the app
+  - npm start
+
 Obs: For this application you'll need a file called client_secret.json. You'll need to create a google cloud project and copy the informations of it
